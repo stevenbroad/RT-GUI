@@ -30,6 +30,12 @@ class FilePicker(tk.Frame):
     def get_file_path(self):
         return self.contents.get()
 
+    def get_value(self):
+        return self.get_file_path()
+
+    def set_value(self, value):
+        self.contents.set(value)
+
 class ButtonRow(tk.Frame):
     def __init__(self, master, *buttons):
         super().__init__(master=master)
@@ -39,27 +45,53 @@ class ButtonRow(tk.Frame):
 
 class RTEditWindow(Tk):
     def __init__(self, config_file, log_message):
-        super().__init__(screenName='RTEditWindow', baseName='RTEditWindow', className='RTEditWindow')
+        super().__init__()
         self.title('Edit/Verify ' + config_file)
+        frm = ttk.Frame(self)
+        frm.grid()
         log_message('**Editing {}', config_file)
-
+        self.config_file = config_file
+    
 class RTMainWindow(Tk):
     def __init__(self):
-        super().__init__(screenName='RTMainWindow', baseName='RTMainWindow', className='RTMainWindow')
+        super().__init__()
         self.title('PLEXOS Techno-economic Roundtrip Study')
         frm = ttk.Frame(self, padding=10)
         frm.grid()
         self.config_json = FilePicker(frm, 'Round Trip Config', [('JSON File','*.json')])
-        self.config_json.grid(row=0)
 
-        ButtonRow(frm, ('Execute',self.execute_roundtrip), ('Edit', self.edit_rtconfig), ('Cancel', self.destroy)).grid(row=1)
+        ButtonRow(frm, ('Save', self.save_config), ('Revert', self.load_config), ('Cancel', self.destroy)).grid(row=1)
+        self.inputs = {
+            'plx_input': FilePicker(frm, 'PLEXOS Input', [('PLEXOS Input .xml', '*.xml')]),
+            'psse_sav': FilePicker(frm, 'PSS/E Sav File', [('PSS/E .sav', '*.sav')]),
+            'psse_mon': FilePicker(frm, 'PSS/E Mon File', [('PSS/E .mon', '*.mon')]),
+            'psse_con': FilePicker(frm, 'PSS/E Con File', [('PSS/E .con', '*.con')]),
+            'psse_dfx': FilePicker(frm, 'PSS/E Distribution File', [('PSS/E .dfx', '*.dfx')])
+        }
+
+        ButtonRow(frm, ('Execute',self.execute_roundtrip), ('Edit', self.edit_rtconfig), ('Cancel', self.destroy)).grid(row=2+len(self.inputs))
 
         self.log = st.ScrolledText(frm)
-        self.log.grid(row=3)
+        self.log.grid(row=3+len(self.inputs))
         self.log.insert(END, '*'*25)
 
-        ButtonRow(frm, ('Open PLEXOS', None), ('Open PSS/E', None), ('Open Logfile', None)).grid(row=4)
+        ButtonRow(frm, ('Open PLEXOS', None), ('Open PSS/E', None), ('Open Logfile', None)).grid(row=4+len(self.inputs))
     
+    def save_config(self):
+        jobj = {}
+        for key, fld in self.inputs.items():
+            jobj[key] = fld.get_value()
+        json.dump(jobj, open(self.config_json.get_value(), 'w'))
+
+    def load_value(self, key, value):
+        if key in self.inputs:
+            self.inputs[key].set_value(value)
+
+    def load_config(self):
+        jobj = json.load(open(self.config_json.get_value()))
+        for key, value in jobj.items():
+            self.load_value(key, value)
+
     def log_message(self, fmt, *args, **kargs):
         self.log.insert(END, '\n' + fmt.format(*args, **kargs))
 
