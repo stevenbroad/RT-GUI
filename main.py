@@ -43,15 +43,6 @@ class ButtonRow(tk.Frame):
         for idx, btn in enumerate(self.buttons):
             btn.grid(column=idx, row=0)
 
-class RTEditWindow(Tk):
-    def __init__(self, config_file, log_message):
-        super().__init__()
-        self.title('Edit/Verify ' + config_file)
-        frm = ttk.Frame(self)
-        frm.grid()
-        log_message('**Editing {}', config_file)
-        self.config_file = config_file
-    
 class RTMainWindow(Tk):
     def __init__(self):
         super().__init__()
@@ -69,7 +60,7 @@ class RTMainWindow(Tk):
             'psse_dfx': FilePicker(frm, 'PSS/E Distribution File', [('PSS/E .dfx', '*.dfx')])
         }
 
-        ButtonRow(frm, ('Execute',self.execute_roundtrip), ('Edit', self.edit_rtconfig), ('Cancel', self.destroy)).grid(row=2+len(self.inputs))
+        ButtonRow(frm, ('Execute',self.execute_roundtrip), ('Cancel', self.destroy)).grid(row=2+len(self.inputs))
 
         self.log = st.ScrolledText(frm)
         self.log.grid(row=3+len(self.inputs))
@@ -102,10 +93,6 @@ class RTMainWindow(Tk):
             self.log_message('*****{}*****', self.config_json.get_file_path())
             self.config_jobj = json.load(open(self.config_json.get_file_path()))
             self.log_message('{}', json.dumps(self.config_jobj)[:1000])
-
-    def edit_rtconfig(self):
-        RTEditWindow(self.config_json.get_file_path(), self.log_message).mainloop()
-
 
 
     
