@@ -1,6 +1,6 @@
 import os, json
 import tkinter as tk
-from tkinter import Label, filedialog as fd, ttk, Tk, scrolledtext as st
+from tkinter import filedialog as fd, ttk, Tk, scrolledtext as st
 from tkinter.constants import END
 
 class FilePicker(tk.Frame):
@@ -111,7 +111,7 @@ class RTMainWindow(Tk):
             create_action=self.save_config
         )
 
-        ButtonRow(frm, ('Save', self.save_config), ('Revert', self.load_config), ('Cancel', self.destroy)).grid(row=1)
+        ButtonRow(frm, ('Save', self.save_config), ('Revert', self.load_config), ('Execute',self.execute_roundtrip), ('Cancel', self.destroy)).grid(row=1)
         self.inputs = {
             'plx_input': FilePicker(frm, 'PLEXOS Input', [('PLEXOS Input .xml', '*.xml')], createable=False, entry_width=103),
             'plx_model': LabeledEntry(frm, 'PLEXOS Model', entry_width=106),
@@ -124,13 +124,12 @@ class RTMainWindow(Tk):
             'sql_output': LabeledEntry(frm, 'SQL Output DB', entry_width=106),
             'script_folder': FolderPicker(frm, 'Script Folder', entry_width=103)
         }
-        ButtonRow(frm, ('Execute',self.execute_roundtrip), ('Cancel', self.destroy)).grid(row=2+len(self.inputs))
 
-        self.log = st.ScrolledText(frm)
-        self.log.grid(row=3+len(self.inputs))
+        self.log = st.ScrolledText(frm, width=93)
+        self.log.grid(row=2+len(self.inputs))
         self.log.insert(END, '*'*25)
 
-        ButtonRow(frm, ('Open PLEXOS', None), ('Open PSS/E', None), ('Open Logfile', None)).grid(row=4+len(self.inputs))
+        ButtonRow(frm, ('Open PLEXOS', None), ('Open PSS/E', None), ('Open Logfile', None)).grid(row=3+len(self.inputs))
     
     def save_config(self):
         jobj = {}
